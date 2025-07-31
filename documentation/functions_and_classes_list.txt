@@ -1,0 +1,124 @@
+
+[ Function/Class documentation ]
+This file lists all of the PUBLIC functions & classes available through EMMA.hpp
+Note that all of these functions and classes are within the 'emma' namespace.
+
+Also note that inside the function definition files (.cpp), is usually also
+similar information listed about the function right above it.
+
+
+
+[ CLASS - BaseAllocator ]  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+  Abstract class inherited by allocators with their own management algorithms.
+  All derived allocator classes must follow the behaviour defined here!
+
+-   [ CONSTRUCTOR ]
+      Protoype   : BaseAllocator(void* memory_start, std::size_t memory_size);
+
+      Params     : (1) Start address of the memory available to the allocator
+                   (2) Size in bytes of the memory available to the allocator
+
+      On failure : Throws an exception if they are enabled.
+                   Otherwise does nothing, though allocations will always fail.
+
+      Fails if   : There is not enough memory available to make any allocations
+
+
+-   [ MEMBER FUNCTION - allocate_class ]
+      Protoype   : T* allocate_class<T>(Args...)
+
+      Params     : (1) Arguments (any amount & any type)
+
+      On success : Allocates memory, and constructs the class in that location.
+                   Returns a pointer to the newly constructed class.
+                   Is basically just a wrapper for allocate_raw_ptr()
+
+      On failure : Returns NULL by default.
+                   May throw an exception if EMMA_ENABLE_EXCEPTIONS == 1.
+
+      Fails if   : There is not enough memory available for the allocation.
+
+
+-   [ MEMBER FUNCTION - free_class ]
+      Protoype   : void free_class<T>(T* ptr_to_class)
+
+      Params     : (1) Ptr to the class
+
+      On success : Deconstructs the class, and deallocates it's memory.
+
+      Fails if   : Cannot fail if the pointer is valid.
+                   Is basically just a wrapper for free_raw_ptr()
+
+
+-   [ VIRTUAL MEMBER FUNCTION - allocate_raw_ptr ]
+      Protoype   : void* allocate_raw_ptr(std::size_t data_size)
+
+      Params     : (1) Size of the data to allocate in bytes
+
+      On success : Allocates memory, returns a pointer to it.
+
+      On failure : Returns NULL by default.
+                   May throw an exception if EMMA_ENABLE_EXCEPTIONS == 1.
+
+      Fails if   : There is not enough memory available for the allocation.
+
+
+-   [ VIRTUAL MEMBER FUNCTION - free_raw_ptr ]
+      Protoype   : void free_raw_ptr(void *ptr_to_data)
+
+      Params     : (1) Pointer to a previously allocated block of memory
+
+      On success : Deallocates the memory
+
+      Fails if   : Cannot fail if the pointer is valid
+
+                  
+
+
+[ CLASS - FreeList ] -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+  Inherits from BaseAllocator.
+  Implements a free list algorithm, optimized with red-black trees to guarantee
+  a *max* time complexity of O(log n) for both allocations and deallocations.
+
+  Usage is defined in BaseAllocator, only the name of the constructor differs.
+
+
+
+[ CLASS - RedBlackTree ]   -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+  Represents a single red-black tree.
+  Allows you to insert/remove/search nodes to your heart's desire.
+  Is not responsible for constructing nodes! Only manages their variables!
+
+-   [ CONSTRUCTOR ]
+      Protoype   : RedBlackTree()
+
+-   [ MEMBER FUNCTION - insert_node ]
+      Protoype   : void insert_node(Node* new_node)
+
+      Params     : (1) Ptr to a node
+
+      On success : Inserts the node to the tree.
+
+      Fails if   : Cannot fail if the pointer is valid.
+
+
+-   [ MEMBER FUNCTION - remove_node ]
+      Protoype   : void remove_node(Node* new_node)
+
+      Params     : (1) Ptr to a node
+
+      On success : Removes the node
+
+      Fails if   : Cannot fail if the pointer is valid.
+
+
+-   [ MEMBER FUNCTION - search_best_fit ]
+      Protoype   : Node* search_best_fit(std::size_t size)
+
+      Params     : (1) Desired size (value) to find
+
+      On success : Returns a pointer to the node with the closest matching value
+
+      On failure : Returns NULL
+
+      Fails if   : There are no nodes in the tree
